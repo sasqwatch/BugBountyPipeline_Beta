@@ -8,7 +8,7 @@ from ....helper.create_instance import *
 config = configparser.ConfigParser()
 
 
-class AmassRemoteExecutor(luigi.Task):
+class AssetfinderRemoteExecutor(luigi.Task):
     """
     This luigi task is responsible for running the 'assetfinder' binary with options
     """
