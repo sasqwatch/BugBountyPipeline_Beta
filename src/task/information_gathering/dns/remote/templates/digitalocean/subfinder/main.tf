@@ -28,11 +28,11 @@ resource "digitalocean_ssh_key" "ssh_key" {
   public_key = tls_private_key.temp_pvt_key.public_key_openssh
 }
 
-resource "digitalocean_droplet" "task-amass" {
+resource "digitalocean_droplet" "task-subfinder" {
   depends_on = [tls_private_key.temp_pvt_key]
 
   image = "ubuntu-18-04-x64"
-  name = "task-amass"
+  name = "task-subfinder"
   region = "nyc3"
   size = "s-1vcpu-1gb"
   private_networking = true
@@ -47,8 +47,8 @@ resource "digitalocean_droplet" "task-amass" {
   }
 
   provisioner "file" {
-    source = "/usr/share/amass/config.ini"
-    destination = "/tmp/config.ini"
+    source = "/usr/share/subfinder/config.yaml"
+    destination = "/tmp/config.yml"
   }
 
   provisioner "file" {
@@ -60,12 +60,12 @@ resource "digitalocean_droplet" "task-amass" {
     inline = [
       "export PATH=$PATH:/usr/bin",
       "apt-get update && apt-get upgrade -y",
-      "apt-get -y install unzip",
-      "mkdir -p /usr/share/amass",
+      "wget https://github.com/projectdiscovery/subfinder/releases/download/v2.4.4/subfinder_2.4.4_linux_amd64.tar.gz",
+      "tar -zxvf subfinder_2.4.4_linux_amd64.tar.gz",
+      "mv subfinder /usr/bin/",
       "cat /tmp/key.pub >> /root/.ssh/authorized_keys",
-      "mv /tmp/config.ini /usr/share/amass",
-      "wget https://github.com/OWASP/Amass/releases/download/v3.10.3/amass_linux_amd64.zip -O /tmp/amass.zip",
-      "unzip /tmp/amass.zip -d /tmp && cp /tmp/amass_linux_amd64/amass /usr/bin",
+      "mkdir -p /usr/share/subfinder",
+      "cp /tmp/config.yaml /usr/share/subfinder/config.yaml",
       "touch /tmp/task.complete"
     ]
   }
@@ -73,5 +73,5 @@ resource "digitalocean_droplet" "task-amass" {
 
 output "web_ipv4_address" {
   description = "List of IPv4 addresses of web Droplets"
-  value       = digitalocean_droplet.task-amass.ipv4_address
+  value       = digitalocean_droplet.task-subfinder.ipv4_address
 }
