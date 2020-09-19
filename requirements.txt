@@ -1,0 +1,5 @@
+luigi
+mysql-connector
+python-terraform
+requests
+tldextract
