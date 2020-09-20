@@ -1,4 +1,5 @@
 import configparser
+import tldextract
 import luigi
 import re
 
@@ -23,6 +24,7 @@ class ChaosExecutor(luigi.Task):
         pass
 
     def run(self):
+        _parsed: list = []
         _domains: list = []
         _subdomains: list = []
 
@@ -30,9 +32,13 @@ class ChaosExecutor(luigi.Task):
             [_domains.append(line.rstrip()) for line in fp]
 
         for _domain in _domains:
+            stub_domain = tldextract.extract(_domain)
+            _domain = f"{stub_domain.domain}.{stub_domain.suffix}"
+            if _domain in _parsed:
+                continue
+            _parsed.append(_domain)
             _command = self.command_tpl.replace('**DOMAIN**', _domain)
             _command = _command.replace('**APIKEY**', self.api_key)
-            _command = _command.replace('**CONFIG**', self.config_file)
             proc_out = chain(_command.rstrip())
             if proc_out:
                 [_subdomains.append(_subdomain) for _subdomain in proc_out
